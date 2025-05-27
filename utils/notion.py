@@ -3,6 +3,7 @@ import requests
 import logging
 from datetime import datetime
 import pytz
+import json
 
 NOTION_API_KEY = os.getenv("NOTION_API_KEY")
 NOTION_DATABASE_ID = os.getenv("NOTION_DATABASE_ID")
@@ -110,8 +111,11 @@ def add_or_update_ticket(issue, existing_ids, dry_run=False):
         res = requests.post(f"{NOTION_BASE_URL}/pages", headers=NOTION_HEADERS, json=payload)
 
         if res.status_code != 200:
-            logging.error(f"❌ Failed to create ticket {key}: {res.status_code} — {res.text}")
-            logging.debug(f"Payload sent:\n{payload}")
+            print(f"\n❌ Failed to create ticket {key} in Notion.")
+            print(f"Status code: {res.status_code}")
+            print(f"Response: {res.text}")
+            print("Payload:")
+            print(json.dumps(payload, indent=2))
             raise Exception(f"Failed to create ticket {key} in Notion")
 
         logging.info(f"✅ Created ticket {key} in Notion")
