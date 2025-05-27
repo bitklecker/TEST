@@ -29,6 +29,7 @@ jobs:
           JIRA_API_TOKEN:       ${{ secrets.JIRA_API_TOKEN }}
           JIRA_DOMAIN:          ${{ secrets.JIRA_DOMAIN }}
           JIRA_JQL:             ${{ secrets.JIRA_JQL }}
+          JIRA_DISPLAY_NAME: ${{ secrets.JIRA_DISPLAY_NAME }}
           EMAIL_SENDER:         ${{ secrets.EMAIL_SENDER }}
           EMAIL_RECEIVER:       ${{ secrets.EMAIL_RECEIVER }}
           EMAIL_APP_PASSWORD:   ${{ secrets.EMAIL_APP_PASSWORD }}
