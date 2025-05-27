@@ -1,0 +1,35 @@
+name: Jira → Notion sync
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '0 13,14,15,16,17,18,19,20,21 * * 1-5'
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.x'
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Run sync
+        env:
+          NOTION_API_KEY:       ${{ secrets.NOTION_API_KEY }}
+          NOTION_DATABASE_ID:   ${{ secrets.NOTION_DATABASE_ID }}
+          JIRA_EMAIL:           ${{ secrets.JIRA_EMAIL }}
+          JIRA_API_TOKEN:       ${{ secrets.JIRA_API_TOKEN }}
+          JIRA_DOMAIN:          ${{ secrets.JIRA_DOMAIN }}
+          JIRA_JQL:             ${{ secrets.JIRA_JQL }}
+          EMAIL_SENDER:         ${{ secrets.EMAIL_SENDER }}
+          EMAIL_RECEIVER:       ${{ secrets.EMAIL_RECEIVER }}
+          EMAIL_APP_PASSWORD:   ${{ secrets.EMAIL_APP_PASSWORD }}
+        run: python3 main.py

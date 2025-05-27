@@ -1,0 +1,9 @@
+# Python
+__pycache__/
+*.pyc
+*.log
+
+# Local environment / secrets
+.env
+update_cache.json
+sync.lock
