@@ -18,7 +18,6 @@ NOTION_HEADERS = {
 # Mapping: Notion property → (Jira field, type)
 FIELD_MAP = {
     "Name": ("summary", "title"),
-    "Ticket ID": ("key", "rich_text"),
     "Designer": ("customfield_13403", "select"),
     "Copy due date": ("customfield_13406", "date"),
     "CR3": ("customfield_15039", "date"),
@@ -93,6 +92,18 @@ def add_or_update_ticket(issue, existing_ids, dry_run=False):
         formatted = format_property(value, field_type)
         if formatted:
             props[notion_field] = formatted
+
+    # Add Jira ticket ID as a rich text link
+    jira_domain = os.getenv("JIRA_DOMAIN")
+    jira_url = f"https://{jira_domain}/browse/{key}"
+    props["Ticket ID"] = {
+        "rich_text": [{
+            "text": {
+                "content": key,
+                "link": {"url": jira_url}
+            }
+        }]
+    }
 
     changes = {}
 
