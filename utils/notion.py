@@ -14,7 +14,7 @@ NOTION_HEADERS = {
     "Content-Type": "application/json",
 }
 
-# Mapping: Notion field → Jira field
+# Mapping: Notion property → (Jira field, type)
 FIELD_MAP = {
     "Name": ("summary", "title"),
     "Ticket ID": ("key", "rich_text"),
@@ -64,24 +64,23 @@ def format_property(value, field_type):
     if not value:
         return None
     if field_type == "select":
-        return {"select": {"name": value}}
+        return {"select": {"name": str(value).strip()}}
     if field_type == "date":
         return {"date": {"start": value[:10]}}
     if field_type == "title":
-        return {"title": [{"text": {"content": value}}]}
+        return {"title": [{"text": {"content": str(value)}}]}
     if field_type == "rich_text":
-        return {"rich_text": [{"text": {"content": value}}]}
+        return {"rich_text": [{"text": {"content": str(value)}}]}
     return None
 
 def add_or_update_ticket(issue, existing_ids, dry_run=False):
     key = issue["key"]
-    summary = issue["fields"].get("summary", "")
     props = {}
 
     for notion_field, (jira_field, field_type) in FIELD_MAP.items():
         raw = issue["fields"].get(jira_field)
-        if isinstance(raw, dict) and "displayName" in raw:  # user object
-            value = raw.get("displayName")
+        if isinstance(raw, dict) and "displayName" in raw:
+            value = raw["displayName"]
         elif isinstance(raw, list) and raw and isinstance(raw[0], dict) and "displayName" in raw[0]:
             value = raw[0]["displayName"]
         elif isinstance(raw, str):
@@ -97,7 +96,7 @@ def add_or_update_ticket(issue, existing_ids, dry_run=False):
     changes = {}
 
     if key not in existing_ids:
-        props["Status"] = {"status": {"name": "Not Started"}}  # Default for new tickets
+        props["Status"] = {"status": {"name": "Not Started"}}
 
         if dry_run:
             logging.info(f"[DRY RUN] Would create ticket: {key}")
@@ -107,13 +106,18 @@ def add_or_update_ticket(issue, existing_ids, dry_run=False):
             "parent": {"database_id": NOTION_DATABASE_ID},
             "properties": props,
         }
+
         res = requests.post(f"{NOTION_BASE_URL}/pages", headers=NOTION_HEADERS, json=payload)
-        res.raise_for_status()
+
+        if res.status_code != 200:
+            logging.error(f"❌ Failed to create ticket {key}: {res.status_code} — {res.text}")
+            logging.debug(f"Payload sent:\n{payload}")
+            raise Exception(f"Failed to create ticket {key} in Notion")
+
         logging.info(f"✅ Created ticket {key} in Notion")
         changes["created"] = True
     else:
         logging.info(f"➖ Ticket {key} already exists. Skipping create.")
-        # You can add update logic here later if needed (based on comparison)
 
     return key, changes
 
