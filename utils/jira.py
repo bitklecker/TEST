@@ -33,7 +33,7 @@ def fetch_filtered_jira_issues():
             raise RuntimeError(f"Unsupported JIRA_ROLE: {role}. Must be one of: {', '.join(ROLE_FIELD_IDS)}")
 
         jql = (
-            f'project = CFM AND resolution = Unresolved AND created >= "2024-01-01" '
+            f'project = CFM AND status != Resolved AND created >= "2024-01-01" '
             f'AND {field_id} = "{display_name}" '
             f'ORDER BY created DESC'
         )
@@ -48,7 +48,7 @@ def fetch_filtered_jira_issues():
     auth = (email, token)
     params = {
         "jql": jql,
-        "maxResults": 100,
+        "maxResults": 1000,
         "fields": "*all",
     }
 
